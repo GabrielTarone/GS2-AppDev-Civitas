@@ -60,13 +60,11 @@ npm -v
 
 ### 2. Configurar o MongoDB Atlas
 
-A aplicação utiliza:
-
-- **Database:** `Civitas-Database`
-- **Collection:** `occurrences`
-- **GridFS bucket:** `occurrencePhotos`
-
 No Atlas, o cluster deve estar ativo, o usuário do banco deve ter permissão de leitura e escrita em `Civitas-Database` e o endereço IP do computador que executará a aplicação deve estar autorizado em **Network Access**.
+
+Para esta avaliação, o enderço de IP está configurado como 0.0.0.0/0 , permitindo o acesso de qualquer computador da internet ao banco de dados, mas apenas a quem possuir um usuário e senha cadastrados no banco de dados. Assim, não será necessário pedir e cadastrar o endereço IP do avaliador, preservando sua privacidade.
+
+O usuário, senha e url de acesso ao banco de dados serão informados ao avaliador por outro canal seguro.
 
 ### 3. Criar o arquivo `.env`
 
@@ -78,9 +76,11 @@ MONGODB_URI=mongodb+srv://USUARIO:SENHA@SEU_CLUSTER.mongodb.net/Civitas-Database
 CARTO_BASEMAP_KEY=SUA_CHAVE_CARTO
 ```
 
+PS.: Estas variáveis serão informadas ao avaliador via um outro canal seguro.
+
 Substitua os valores de exemplo pelos dados de conexão do MongoDB Atlas. A chave `CARTO_BASEMAP_KEY` é opcional: sem ela, o mapa continua disponível no modo claro pelo OpenStreetMap, mas o modo escuro do CARTO fica desabilitado.
 
-**Não compartilhe o `.env` nem publique suas credenciais.** Para outra pessoa executar o projeto, forneça as credenciais por um canal privado e autorize o IP dela no Atlas. Se for usada uma regra temporária que permita conexões de qualquer IP (`0.0.0.0/0`), restrinja as permissões do usuário ao banco `Civitas-Database`, proteja a senha e remova a regra após a avaliação.
+**Não compartilhe o `.env` nem publique suas credenciais.** Para outra pessoa executar o projeto, forneça as credenciais por um canal privado e autorize o IP dela no Atlas. O acesso que permite conexões de qualquer IP (`0.0.0.0/0`), é temporário e será removido após a avaliação. Esta regra significa uma potencial falha de segurança que nós, o grupo (alunos da FIAP), temos plena confiança que o professor/avaliador terá cuidado com os dados sensíveis enviados.
 
 ### 4. Instalar as dependências
 
