@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#182B3A">
+  <meta name="description" content="Plataforma colaborativa de monitoramento urbano Civitas.">
+  <title>Civitas — Monitoramento urbano</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
+  <link rel="stylesheet" href="/css/themes.css">
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/analytics.css">
+</head>
+<body data-theme="civitas">
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Navegação principal">
+      <a class="brand" href="#dashboard" data-view="dashboard" aria-label="Civitas, início">
+        <span class="brand-logo-surface"><img src="/assets/civitas-logo.svg" alt="Civitas"></span>
+      </a>
+      <div class="nav-label">VISÃO GERAL</div>
+      <nav class="main-nav">
+        <a href="#dashboard" class="nav-link is-active" data-view="dashboard"><span class="nav-icon">▦</span>Dashboard geral</a>
+        <a href="#analises" class="nav-link" data-view="analytics"><span class="nav-icon" aria-hidden="true">&#9635;</span>An&#225;lises e Estat&#237;sticas</a>
+        <a href="#gerenciamento" class="nav-link" data-view="management"><span class="nav-icon">☷</span>Gerenciamento</a>
+        <a href="#mapa" class="nav-link" data-view="map"><span class="nav-icon">⌖</span>Mapa de ocorrências</a>
+      </nav>
+      <div class="nav-label nav-label-modules">MÓDULOS</div>
+      <nav class="main-nav">
+        <a href="#infraestrutura" class="nav-link" data-view="module" data-module="infraestrutura"><span class="module-dot infrastructure-dot"></span>Infraestrutura</a>
+        <a href="#acessibilidade" class="nav-link" data-view="module" data-module="acessibilidade"><span class="module-dot access-dot"></span>Acessibilidade</a>
+        <a href="#meio_ambiente" class="nav-link" data-view="module" data-module="meio_ambiente"><span class="module-dot environment-dot"></span>Meio ambiente</a>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="civic-note"><span class="note-icon">⌖</span><strong>A cidade melhora<br>com a sua participação.</strong><span>Registre, acompanhe e transforme.</span></div>
+        <div class="sidebar-version">CIVITAS <span>•</span> PARTICIPAÇÃO CIDADÃ</div>
+      </div>
+    </aside>
+
+    <main class="main-area">
+      <header class="topbar">
+        <div class="breadcrumbs"><span>Início</span><span class="crumb-separator">/</span><strong id="breadcrumb-current">Dashboard geral</strong></div>
+        <div class="topbar-actions"><span class="system-indicator is-offline" id="platform-status" aria-live="polite" aria-label="Plataforma offline"><i></i><span>Plataforma offline</span></span></div>
+      </header>
+      <section id="app-content" class="content" aria-live="polite" aria-busy="true">
+        <div class="loading-state">Carregando dados da plataforma…</div>
+      </section>
+      <footer class="page-footer"><span>Civitas <span id="current-year"></span></span><span>Uma cidade melhor começa com a participação de todos.</span></footer>
+    </main>
+  </div>
+  <div id="toast-region" class="toast-region" aria-live="assertive"></div>
+  <dialog id="photo-lightbox" class="photo-lightbox" aria-label="Fotografia da ocorrência ampliada"><button type="button" class="photo-lightbox-close" data-photo-close aria-label="Fechar fotografia">×</button><img alt="Fotografia da ocorrência ampliada"></dialog>
+  <dialog id="occurrence-detail-dialog" class="occurrence-detail-dialog" aria-labelledby="occurrence-detail-title"><div id="occurrence-detail-content"></div></dialog>
+  <script src="/js/api.js" defer></script>
+  <script src="/js/photos.js" defer></script>
+  <script src="/js/dashboard.js" defer></script>
+  <script src="/js/occurrences.js" defer></script>
+  <script src="/js/categories.js" defer></script>
+  <script src="/js/management.js" defer></script>
+  <script src="/js/occurrence-form.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous" defer></script>
+  <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
+  <script src="/js/map-config.js" defer></script>
+  <script src="/js/base-layers.js" defer></script>
+  <script src="/js/map.js" defer></script>
+  <script src="/js/location-picker.js" defer></script>
+  <script src="/js/navigation.js" defer></script>
+  <script src="/js/analytics-charts.js" defer></script>
+  <script src="/js/analytics-map.js" defer></script>
+  <script src="/js/analytics.js" defer></script>
+  <script src="/js/app.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+{
+  "name": "civitas",
+  "version": "1.0.0",
+  "description": "Plataforma colaborativa de monitoramento urbano",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "migrate:occurrences": "node scripts/migrate-occurrences.js",
+    "verify:atlas": "node scripts/verify-atlas-api.js",
+    "verify:ui": "node scripts/verify-ui-contract.js",
+    "verify:photos": "node scripts/verify-photos-atlas.js",
+    "verify:management": "node scripts/verify-management-atlas.js",
+    "verify:analytics": "node scripts/verify-analytics-atlas.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "mongoose": "^8.9.5",
+    "multer": "^2.5.0",
+    "sharp": "^0.35.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  },
+  "overrides": {
+    "minimatch": "^11.0.1"
+  }
+}

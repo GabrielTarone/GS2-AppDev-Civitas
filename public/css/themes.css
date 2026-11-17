@@ -1,0 +1,33 @@
+:root {
+  --navy: #182B3A;
+  --page-bg: #F5F7FA;
+  --surface: #FFFFFF;
+  --text-main: #243647;
+  --text-muted: #64748B;
+  --line: #E6EBF0;
+  --theme-primary: #334B5D;
+  --theme-accent: #8293A1;
+  --theme-soft: #EEF2F5;
+  --theme-ink: #243647;
+  --header-bg: #FFFFFF;
+  --header-fg: #33485A;
+  --header-muted: #8492A0;
+  --header-divider: #C4CDD5;
+  --header-button-bg: var(--theme-primary);
+  --header-button-fg: #FFFFFF;
+  --status-pending: #A86513;
+  --status-pending-bg: #FFF3DF;
+  --status-analysis: #356AA0;
+  --status-analysis-bg: #EAF3FB;
+  --status-progress: #7250A4;
+  --status-progress-bg: #F0EAFE;
+  --status-done: #31734C;
+  --status-done-bg: #E9F5EC;
+  --severity-low: #64748B;
+  --severity-medium: #A86513;
+  --severity-high: #BD5C37;
+  --severity-critical: #B53E43;
+}
+body[data-theme="infraestrutura"] { --theme-primary: #9A5B00; --theme-accent: #E8B83F; --theme-soft: #FFF4D6; --theme-ink: #714200; --header-bg: #9A5B00; --header-fg: #FFFFFF; --header-muted: rgb(255 255 255 / 84%); --header-divider: rgb(255 255 255 / 35%); --header-button-bg: #FFFFFF; --header-button-fg: #9A5B00; }
+body[data-theme="acessibilidade"] { --theme-primary: #1E5AA8; --theme-accent: #6DA4DF; --theme-soft: #EAF2FC; --theme-ink: #18467F; --header-bg: #1E5AA8; --header-fg: #FFFFFF; --header-muted: rgb(255 255 255 / 84%); --header-divider: rgb(255 255 255 / 35%); --header-button-bg: #FFFFFF; --header-button-fg: #1E5AA8; }
+body[data-theme="meio_ambiente"] { --theme-primary: #256C4A; --theme-accent: #69B88A; --theme-soft: #EAF5EE; --theme-ink: #1C5036; --header-bg: #256C4A; --header-fg: #FFFFFF; --header-muted: rgb(255 255 255 / 84%); --header-divider: rgb(255 255 255 / 35%); --header-button-bg: #FFFFFF; --header-button-fg: #256C4A; }

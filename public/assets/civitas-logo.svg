@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="160" viewBox="0 0 620 160" role="img" aria-labelledby="title desc">
+  <title id="title">Civitas</title>
+  <desc id="desc">Logotipo Civitas com um marcador de localização contendo silhuetas de edifícios.</desc>
+  <g transform="translate(8 4)">
+    <!-- Marcador urbano -->
+    <path d="M68 4C32.7 4 4 32.7 4 68c0 43.2 64 88 64 88s64-44.8 64-88C132 32.7 103.3 4 68 4Z" fill="#182B3A"/>
+    <!-- Edifícios em negativo -->
+    <path d="M31 86V63h19v-15h20v15h12V43h20v43H31Z" fill="#FFFFFF"/>
+    <!-- Janelas discretas -->
+    <g fill="#D58B26">
+      <rect x="38" y="70" width="5" height="6" rx="1"/>
+      <rect x="48" y="70" width="5" height="6" rx="1"/>
+      <rect x="57" y="55" width="5" height="6" rx="1"/>
+      <rect x="67" y="55" width="5" height="6" rx="1"/>
+      <rect x="57" y="67" width="5" height="6" rx="1"/>
+      <rect x="67" y="67" width="5" height="6" rx="1"/>
+      <rect x="88" y="53" width="5" height="6" rx="1"/>
+      <rect x="98" y="53" width="5" height="6" rx="1"/>
+      <rect x="88" y="65" width="5" height="6" rx="1"/>
+      <rect x="98" y="65" width="5" height="6" rx="1"/>
+    </g>
+    <!-- Ponto de referência -->
+    <circle cx="68" cy="22" r="7" fill="#E8B83F"/>
+  </g>
+  <text x="166" y="105" fill="#182B3A" font-family="Inter, Avenir, Montserrat, Arial, sans-serif" font-size="76" font-weight="700" letter-spacing="-2.5">Civitas</text>
+  <rect x="168" y="122" width="72" height="5" rx="2.5" fill="#D58B26"/>
+</svg>
