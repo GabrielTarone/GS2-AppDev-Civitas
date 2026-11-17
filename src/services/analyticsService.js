@@ -1,5 +1,6 @@
 const Occurrence = require('../models/Occurrence');
 const { CATEGORIES, MODULES, SEVERITIES, STATUSES } = require('../utils/validators');
+const { categoryGroupKey, spatialCellDimensions, metricForSamples } = require('../utils/analyticsHelpers');
 
 const TIME_ZONE = 'America/Sao_Paulo';
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -126,7 +127,7 @@ function buildPipeline(filter, cellMeters, unit) {
         firstCreatedAt: { $min: '$createdAt' }
       } }],
       byModule: [{ $group: { _id: '$module', count: { $sum: 1 } } }],
-      byCategory: [{ $group: { _id: '$category', count: { $sum: 1 } } }, { $sort: { count: -1, _id: 1 } }],
+      byCategory: [{ $group: { _id: { module: '$module', category: '$category' }, count: { $sum: 1 } } }, { $sort: { count: -1, '_id.module': 1, '_id.category': 1 } }],
       bySeverity: [{ $group: { _id: '$severity', count: { $sum: 1 } } }],
       byStatus: [{ $group: { _id: '$status', count: { $sum: 1 } } }],
       timeline: [{ $group: { _id: timelineGroup, moduleCounts: { $push: '$module' }, count: { $sum: 1 } } }, { $sort: { _id: 1 } }],
@@ -224,16 +225,22 @@ function mergeRows(rows, mode, cellMeters) {
     }
     group.byModule[row._id.module] = (group.byModule[row._id.module] || 0) + row.count;
     group.byStatus[row._id.status] = (group.byStatus[row._id.status] || 0) + row.count;
-    group.categories.set(row._id.category, (group.categories.get(row._id.category) || 0) + row.count);
+    const categoryKey = categoryGroupKey(row._id.module, row._id.category);
+    const categoryEntry = group.categories.get(categoryKey) || { module: row._id.module, category: row._id.category, count: 0 };
+    categoryEntry.count += row.count;
+    group.categories.set(categoryKey, categoryEntry);
   }
   return [...groups.values()].map(group => {
     const center = mode === 'spatial' ? { latitude: group.sumLatitude / group.count, longitude: group.sumLongitude / group.count } : null;
     const { sumLatitude, sumLongitude, cell, ...rest } = group;
+    const approximateCellDimensionsMeters = mode === 'spatial'
+      ? spatialCellDimensions(cellMeters, center.latitude)
+      : null;
     return {
       ...rest,
       center,
-      approximateCellMeters: mode === 'spatial' ? Math.round(cellMeters * Math.cos((center.latitude * Math.PI) / 180)) : null,
-      categories: [...group.categories].map(([category, count]) => ({ category, count })).sort((a, b) => b.count - a.count),
+      approximateCellDimensionsMeters,
+      categories: [...group.categories.values()].sort((a, b) => b.count - a.count || a.module.localeCompare(b.module) || a.category.localeCompare(b.category)),
       pending: group.byStatus.Pendente,
       resolved: group.byStatus.Resolvida
     };
@@ -288,7 +295,7 @@ async function getAnalytics(filters, session) {
       recurrentPlaces
     },
     byModule,
-    byCategory: (raw.byCategory || []).map(row => ({ category: row._id, count: row.count })),
+    byCategory: (raw.byCategory || []).map(row => ({ module: row._id.module, category: row._id.category, count: row.count })),
     bySeverity,
     byStatus,
     timelineUnit: unit,
@@ -302,10 +309,16 @@ async function getAnalytics(filters, session) {
       notResolved: Math.max(0, (summary.total || 0) - (summary.resolved || 0)),
       averageHours: resolution?.averageHours ?? null,
       medianHours: median(resolution?.samples || []),
-      byModule: MODULES.map(module => ({ module, count: resolutionModuleCounts[module], averageHours: resolutionByModule[module] || null })),
+      byModule: MODULES.map(module => ({ module, count: resolutionModuleCounts[module], averageHours: metricForSamples(resolutionModuleCounts[module], resolutionByModule[module]) })),
       byCategory: (raw.resolutionByCategory || []).map(row => ({ category: row._id.category, module: row._id.module, count: row.count, averageHours: row.averageHours })).filter(row => row.count >= 2)
     },
-    methodology: { timezone: TIME_ZONE, spatialCellMeters: filters.filters.cellMeters, addressFallbackOnlyForRecordsWithoutValidCoordinates: true }
+    methodology: {
+      timezone: TIME_ZONE,
+      spatialCellMeters: filters.filters.cellMeters,
+      spatialCellDimensions: 'A altura norte-sul é nominal; a largura leste-oeste é aproximada e varia conforme a latitude.',
+      categoryAggregation: 'Categorias são agrupadas por módulo e nome, preservando categorias homônimas em módulos diferentes.',
+      addressFallbackOnlyForRecordsWithoutValidCoordinates: true
+    }
   };
 }
 

@@ -26,6 +26,20 @@ const fixtures = [
   {
     module: 'infraestrutura', category: 'Iluminação pública', description: 'Outro legado no mesmo endereço normalizado.',
     location: '  prACA   temporaria, 12 ', severity: 'Crítica', status: 'Em andamento'
+  },
+  {
+    module: 'infraestrutura', category: 'Outros', description: 'Ocorrência resolvida imediatamente para testar média zero.',
+    location: 'Avenida de validação, 100', severity: 'Baixa', status: 'Resolvida',
+    coordinates: { latitude: -23.5505, longitude: -46.6333 }
+  },
+  {
+    module: 'acessibilidade', category: 'Outros', description: 'Categoria homônima em outro módulo com resolução imediata.',
+    location: 'Avenida de validação, 100', severity: 'Média', status: 'Resolvida',
+    coordinates: { latitude: -23.5505, longitude: -46.6333 }
+  },
+  {
+    module: 'meio_ambiente', category: 'Outros', description: 'Categoria homônima do módulo ambiental ainda pendente.',
+    location: 'Rua de validação ambiental, 502', severity: 'Alta', status: 'Pendente'
   }
 ];
 
@@ -44,9 +58,15 @@ async function run() {
   for (const [index, fixture] of fixtures.slice(2).entries()) {
     fixture.createdAt = new Date(baseTime.getTime() + (index + 4) * 86400000 + 3600000);
     fixture.updatedAt = fixture.createdAt;
+    if (index === 2 || index === 3) {
+      fixture.statusHistory = [
+        { previousStatus: null, newStatus: 'Pendente', note: '', changedAt: fixture.createdAt },
+        { previousStatus: 'Pendente', newStatus: 'Resolvida', note: 'Resolução imediata de teste.', changedAt: fixture.createdAt }
+      ];
+    }
   }
   const start = new Date(baseTime);
-  const end = new Date(baseTime.getTime() + 8 * 86400000);
+  const end = new Date(baseTime.getTime() + 9 * 86400000);
   const parsed = analyticsService.parseFilters({ period: 'custom', start: start.toISOString(), end: end.toISOString(), cellMeters: '250' });
   assert.ok(!parsed.error, parsed.error);
   assert.ok(analyticsService.parseFilters({ period: 'custom' }).error, 'Intervalo personalizado precisa de duas datas.');
@@ -61,23 +81,35 @@ async function run() {
       await Occurrence.create(fixtures, { session, ordered: true });
       const result = await analyticsService.getAnalytics(parsed, session);
       assert.equal(result.summary.total, fixtures.length);
-      assert.equal(result.summary.geolocated, 2);
-      assert.equal(result.summary.withoutCoordinates, 2);
-      assert.equal(result.heatPoints.length, 2);
-      assert.equal(result.areas[0].count, 2);
+      assert.equal(result.summary.geolocated, 4);
+      assert.equal(result.summary.withoutCoordinates, 3);
+      assert.equal(result.heatPoints.length, 4);
+      assert.equal(result.areas[0].count, 4);
       assert.ok(result.areas[0].center.latitude < -23.55 && result.areas[0].center.longitude < -46.63);
+      assert.deepEqual(result.areas[0].approximateCellDimensionsMeters, { northSouthMeters: 250, eastWestMeters: 229 });
+      const clusteredCategories = result.areas[0].categories.map(item => `${item.module}:${item.category}`);
+      assert.ok(clusteredCategories.includes('infraestrutura:Buracos nas vias'));
+      assert.ok(clusteredCategories.includes('acessibilidade:Rampas ausentes ou inadequadas'));
+      assert.ok(clusteredCategories.includes('infraestrutura:Outros'), 'A categoria Outros de infraestrutura deve permanecer separada.');
+      assert.ok(clusteredCategories.includes('acessibilidade:Outros'), 'A categoria Outros de acessibilidade deve permanecer separada dentro da mesma área.');
       assert.equal(result.summary.recurrentPlaces, 2, 'A célula espacial e o endereço sem coordenadas devem ser recorrentes.');
       assert.equal(result.recurrences.length, 2);
-      assert.equal(result.resolution.count, 1);
-      assert.equal(result.resolution.averageHours, 48);
-      assert.equal(result.resolution.medianHours, 48);
+      assert.equal(result.resolution.count, 3);
+      assert.equal(result.resolution.averageHours, 16);
+      assert.equal(result.resolution.medianHours, 0, 'Resoluções imediatas devem preservar duração igual a zero.');
       assert.equal(result.resolution.withoutReliableHistory, 1, 'Registro legado resolvido sem statusHistory deve ficar fora da duração.');
-      assert.equal(result.resolution.notResolved, 2);
+      assert.equal(result.resolution.notResolved, 3);
+      const accessibilityResolution = result.resolution.byModule.find(item => item.module === 'acessibilidade');
+      assert.equal(accessibilityResolution.count, 1);
+      assert.equal(accessibilityResolution.averageHours, 0, 'Média zero por módulo não deve ser convertida em null.');
       assert.equal(result.timelineUnit, 'day');
-      assert.equal(result.timeline.length, 8);
+      assert.equal(result.timeline.length, 9);
       assert.ok(result.timeline.some(item => item.total === 0), 'Intervalos vazios precisam aparecer com zero.');
-      assert.equal(result.byModule.infraestrutura, 2);
-      assert.equal(result.byCategory[0].count, 1);
+      assert.equal(result.byModule.infraestrutura, 3);
+      const duplicateCategoryRows = result.byCategory.filter(item => item.category === 'Outros');
+      assert.equal(duplicateCategoryRows.length, 3, 'A categoria Outros deve permanecer separada por módulo.');
+      assert.deepEqual(new Set(duplicateCategoryRows.map(item => item.module)), new Set(['infraestrutura', 'acessibilidade', 'meio_ambiente']));
+      assert.ok(duplicateCategoryRows.every(item => item.count === 1));
 
       const combined = analyticsService.parseFilters({
         period: 'custom', start: start.toISOString(), end: end.toISOString(),
@@ -106,7 +138,7 @@ async function run() {
     assert.equal(invalidResponse.status, 400);
     const payload = await response.json();
     assert.ok(payload.summary && payload.timeline && payload.heatPoints && payload.resolution);
-    console.log(`Analytics/Atlas aprovados: filtros combinados, agregações, heatmap, ${payload.summary.geolocated} pontos geolocalizados, agrupamentos espaciais e textuais, resolução por histórico e timeline com zeros; ${initialCount} documentos preservados após rollback.`);
+    console.log(`Analytics/Atlas aprovados: filtros combinados, categorias separadas por módulo, heatmap, ${payload.summary.geolocated} pontos geolocalizados, dimensões espaciais, agrupamentos espaciais e textuais, resolução incluindo duração zero e timeline com zeros; ${initialCount} documentos preservados após rollback.`);
   } finally {
     await new Promise(resolve => server.close(resolve));
   }

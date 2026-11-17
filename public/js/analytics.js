@@ -37,7 +37,7 @@
         <p class="analytics-map-summary" id="analytics-map-summary" aria-live="polite">Carregando registros geolocalizados…</p>
         <div class="analytics-map-frame"><div id="analytics-heatmap" class="analytics-heatmap" role="application" aria-label="Mapa de calor interativo das ocorrências geolocalizadas"></div><div class="analytics-heat-legend" aria-label="Legenda de intensidade"><strong>Concentração</strong><span>Menor</span><i></i><span>Maior</span></div></div>
         <p class="analytics-unlocated" id="analytics-unlocated" hidden></p>
-        <p class="analytics-method-note">As coordenadas são agrupadas em células aproximadas configuráveis. Elas indicam concentração local e não representam bairros oficiais.</p>
+        <p class="analytics-method-note">As coordenadas são agrupadas em células aproximadas configuráveis. A dimensão norte-sul é nominal; a dimensão leste-oeste varia com a latitude. As áreas indicam concentração local e não representam bairros oficiais.</p>
       </section>
 
       <section class="panel analytics-panel" aria-labelledby="analytics-areas-title"><div class="panel-heading"><div><p class="eyebrow">RANKING GEOGRÁFICO</p><h2 id="analytics-areas-title">Áreas de concentração</h2><p>Centros aproximados calculados a partir das coordenadas existentes.</p></div></div><div class="analytics-area-list" id="analytics-areas"><p class="analytics-chart-empty">Carregando áreas de concentração…</p></div></section>
@@ -121,9 +121,12 @@
     } catch { }
     root.addEventListener('change', event => {
       const target = event.target;
-      if (target.id === 'analytics-module') updateCategories(target.value);
-      if (target.id === 'analytics-module') root.querySelector('#analytics-map-module').value = target.value;
-      if (target.id === 'analytics-map-module') root.querySelector('#analytics-module').value = target.value;
+      if (target.id === 'analytics-module' || target.id === 'analytics-map-module') {
+        const selectedModule = target.value;
+        root.querySelector('#analytics-module').value = selectedModule;
+        root.querySelector('#analytics-map-module').value = selectedModule;
+        updateCategories(selectedModule);
+      }
       if (target.id === 'analytics-period') {
         root.querySelector('#analytics-map-period').value = target.value;
         root.querySelector('#analytics-custom-range').hidden = target.value !== 'custom';
@@ -246,9 +249,13 @@
     const center = item.center;
     const coords = center ? `${center.latitude.toFixed(5)}, ${center.longitude.toFixed(5)}` : safe(item.location || 'Endereço normalizado');
     const modules = Object.entries(item.byModule || {}).filter(([, count]) => count).map(([module, count]) => `${safe(moduleLabels[module] || module)} ${number(count)}`).join(' · ');
-    const categoryText = (item.categories || []).slice(0, 3).map(category => `${safe(category.category)} (${number(category.count)})`).join(', ');
+    const categoryText = (item.categories || []).slice(0, 3).map(category => `${safe(moduleLabels[category.module] || category.module)}: ${safe(category.category)} (${number(category.count)})`).join(', ');
+    const cellDimensions = item.approximateCellDimensionsMeters;
+    const cellLabel = cellDimensions
+      ? `célula aprox. ${number(cellDimensions.northSouthMeters)} m (N–S) × ${number(cellDimensions.eastWestMeters)} m (L–O)`
+      : '';
     const action = includeMap && center ? `<button type="button" class="button button-secondary button-small" data-analytics-area-index="${index}">Ver no mapa</button>` : '';
-    return `<article class="analytics-area-item"><div><strong>${number(item.count)} ocorrências</strong><span>${center ? `Centro aproximado: ${coords} · célula ~${number(item.approximateCellMeters)} m` : `Endereço textual normalizado: ${coords}`}</span><small>${modules || 'Módulos sem registros'} · ${number(item.pending)} pendentes · ${number(item.resolved)} resolvidas</small><small>Categorias: ${categoryText || 'sem dados'}</small></div>${action}</article>`;
+    return `<article class="analytics-area-item"><div><strong>${number(item.count)} ocorrências</strong><span>${center ? `Centro aproximado: ${coords} · ${cellLabel}` : `Endereço textual normalizado: ${coords}`}</span><small>${modules || 'Módulos sem registros'} · ${number(item.pending)} pendentes · ${number(item.resolved)} resolvidas</small><small>Categorias: ${categoryText || 'sem dados'}</small></div>${action}</article>`;
   }
 
   function renderAreas(areas) {

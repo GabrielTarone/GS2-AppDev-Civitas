@@ -24,6 +24,10 @@ const management = read('public/js/management.js');
 const healthController = read('src/controllers/healthController.js');
 const healthRoutes = read('src/routes/healthRoutes.js');
 const occurrenceController = read('src/controllers/occurrenceController.js');
+const analyticsUi = read('public/js/analytics.js');
+const analyticsCharts = read('public/js/analytics-charts.js');
+const analyticsService = read('src/services/analyticsService.js');
+const analyticsHelpers = read('src/utils/analyticsHelpers.js');
 
 assert.ok(html.includes('src="/assets/civitas-logo.svg"'));
 assert.ok(html.includes('alt="Civitas"'));
@@ -97,5 +101,13 @@ assert.ok(model.includes('coordinates: { type: coordinatesSchema, default: undef
 assert.ok(validators.includes('Informe uma latitude válida'));
 assert.ok(validators.includes('Informe uma longitude válida'));
 assert.ok(model.includes("collection: 'occurrences'"));
+assert.ok(analyticsUi.includes("target.id === 'analytics-module' || target.id === 'analytics-map-module'"));
+assert.ok(analyticsUi.includes('updateCategories(selectedModule)'), 'Alterar o módulo do mapa deve sincronizar as categorias disponíveis.');
+assert.ok(analyticsUi.includes('approximateCellDimensionsMeters'));
+assert.ok(analyticsUi.includes('category.module'), 'Categorias em áreas geográficas devem identificar o módulo.');
+assert.ok(analyticsCharts.includes('moduleLabels[row.module]'), 'O gráfico de categorias deve distinguir categorias homônimas por módulo.');
+assert.ok(analyticsService.includes("_id: { module: '$module', category: '$category' }"));
+assert.ok(analyticsService.includes('metricForSamples(resolutionModuleCounts[module], resolutionByModule[module])'), 'Médias iguais a zero devem ser preservadas sem criar médias para módulos sem amostras.');
+assert.ok(analyticsHelpers.includes('northSouthMeters') && analyticsHelpers.includes('eastWestMeters'));
 
 console.log('Logo, temas, mapa, OSM, filtros, seleção de coordenadas, geolocalização, compatibilidade legada e collection passaram nas verificações estáticas.');

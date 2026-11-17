@@ -11,7 +11,8 @@
     "verify:ui": "node scripts/verify-ui-contract.js",
     "verify:photos": "node scripts/verify-photos-atlas.js",
     "verify:management": "node scripts/verify-management-atlas.js",
-    "verify:analytics": "node scripts/verify-analytics-atlas.js"
+    "verify:analytics": "node scripts/verify-analytics-atlas.js",
+    "verify:analytics:logic": "node scripts/verify-analytics-logic.js"
   },
   "dependencies": {
     "dotenv": "^16.4.7",

@@ -45,7 +45,7 @@
     const categories = data.byCategory.slice(0, 10);
     makeChart('#analytics-chart-categories', {
       type: 'bar',
-      data: { labels: categories.map(row => row.category), datasets: [{ label: 'Ocorrências', data: categories.map(row => row.count), backgroundColor: '#4E758B', borderRadius: 4 }] },
+      data: { labels: categories.map(row => `${moduleLabels[row.module]} · ${row.category}`), datasets: [{ label: 'Ocorrências', data: categories.map(row => row.count), backgroundColor: categories.map(row => moduleColors[row.module] || '#4E758B'), borderRadius: 4 }] },
       options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { precision: 0 } } } }
     });
     const severityLabels = ['Baixa', 'Média', 'Alta', 'Crítica'];

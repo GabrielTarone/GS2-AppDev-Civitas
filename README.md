@@ -22,7 +22,9 @@ src/          Servidor, configuração, model, rotas, controller e validações
   middleware/ Tratamento de erros e rotas inexistentes
   models/     Modelos Mongoose
   routes/     Rotas da API
-  utils/      Validações compartilhadas pelo backend
+  services/   Processamento de análises e armazenamento GridFS
+  utils/      Validações e cálculos auxiliares
+scripts/      Migração e verificações automatizadas
 ```
 
 ## Instalação e execução
@@ -72,6 +74,8 @@ Para verificar o processamento de imagens, limites de upload, uso do GridFS e li
 
 Para verificar filtros, detalhes, mudanças de status, compatibilidade com registros sem histórico e saúde da API/Atlas, execute `npm run verify:management`. Os registros criados pelo teste são revertidos em transação.
 
+Para testar os cálculos auxiliares das análises sem conexão com o banco, execute `npm run verify:analytics:logic`. Para a verificação integrada de agregações e filtros com o MongoDB Atlas, execute `npm run verify:analytics`; o script usa documentos temporários dentro de uma transação revertida.
+
 ## API
 
 - `POST /api/occurrences` — valida e cadastra uma ocorrência com status inicial `Pendente`.
@@ -83,13 +87,26 @@ Para verificar filtros, detalhes, mudanças de status, compatibilidade com regis
 - `GET /api/occurrences/:occurrenceId/photos/:fileId` — exibe uma foto WebP somente quando o arquivo está associado à ocorrência informada.
 - `GET /api/config/maps` — retorna exclusivamente `cartoBasemapKey`, uma chave de tile pública para uso no navegador.
 - `GET /api/health` — verifica se a API e o MongoDB estão disponíveis, sem retornar dados de conexão.
+- `GET /api/analytics` — calcula indicadores, séries temporais, pontos do mapa de calor, áreas de concentração, recorrências e métricas de resolução. Aceita `module`, `category`, `severity`, `status`, `period` (`7d`, `30d`, `90d`, `all` ou `custom`), `start`, `end` e `cellMeters` (`100`, `250`, `500` ou `1000`). Para `custom`, `start` e `end` devem ser datas ISO com fuso horário.
 
 O cadastro aceita até três fotografias JPG/JPEG, PNG ou WebP (5 MB cada). O servidor verifica o conteúdo, redimensiona até 1600 × 1600, converte para WebP e armazena no bucket `occurrencePhotos`; a ocorrência guarda somente as referências. A preferência Claro/Escuro é compartilhada entre o mapa principal e o seletor de localização e fica no `localStorage`. Sem chave CARTO, o mapa continua com OpenStreetMap e a opção escura fica desabilitada.
 
 A página **Gerenciamento** pesquisa por descrição, categoria e localização e combina filtros por módulo, categoria, gravidade e status. O histórico começa com as novas ocorrências; registros antigos sem `statusHistory` permanecem sem histórico inventado até que uma alteração seja feita. A aplicação não possui autenticação: qualquer pessoa com acesso poderá atualizar status. Essas atualizações representam somente o acompanhamento registrado na Civitas e não confirmam ações de órgãos públicos.
 
+## Análises e Estatísticas
+
+A página **Análises e Estatísticas** utiliza a rota `GET /api/analytics` e os dados reais de `Civitas-Database.occurrences`. Ela apresenta indicadores do período, mapa de calor, áreas de concentração, evolução temporal, comparação entre módulos, ocorrências recorrentes e tempo até a primeira transição documentada para `Resolvida`.
+
+As categorias são agrupadas por módulo e nome. Assim, categorias homônimas — por exemplo, `Outros` — permanecem separadas entre infraestrutura, acessibilidade e meio ambiente.
+
+O mapa de calor e os agrupamentos espaciais utilizam somente coordenadas válidas. Registros sem coordenadas continuam participando dos indicadores e podem ser agrupados por endereço normalizado apenas na análise textual de recorrência. As áreas geográficas são células aproximadas, não bairros oficiais. A dimensão norte-sul corresponde ao tamanho nominal selecionado; a dimensão leste-oeste varia com a latitude e é apresentada separadamente.
+
+A evolução temporal agrupa os cadastros por dia, semana ou mês, no fuso `America/Sao_Paulo`. O tempo até resolução é calculado a partir de `createdAt` e do primeiro evento válido de `statusHistory` com `newStatus: "Resolvida"`; documentos sem histórico confiável não recebem uma duração estimada. A mediana só é apresentada quando há pelo menos cinco amostras.
+
+O comando `npm run verify:analytics:logic` valida a separação de categorias por módulo, as dimensões geográficas aproximadas e a preservação de métricas iguais a zero sem precisar acessar o Atlas. O comando `npm run verify:analytics` executa verificações integradas de agregação, filtros, timeline, mapa de calor e histórico com documentos temporários revertidos por transação.
+
 ## Estado desta versão
 
-Cadastro, consulta, filtros, dashboard geral, indicadores por módulo, temas dinâmicos e mapa geográfico estão implementados. A geolocalização só é solicitada após o usuário clicar em **Usar minha localização**; a seleção manual no mapa continua disponível. O mapa carrega tiles somente para a área visualizada pelo usuário e mantém a atribuição do OpenStreetMap visível. Os registros antigos continuam acessíveis nas listas e indicadores, mesmo sem coordenadas.
+Cadastro, consulta, filtros, dashboard geral, indicadores por módulo, temas dinâmicos, mapa geográfico, gerenciamento e análises estatísticas estão implementados. A geolocalização só é solicitada após o usuário clicar em **Usar minha localização**; a seleção manual no mapa continua disponível. O mapa carrega tiles somente para a área visualizada pelo usuário e mantém a atribuição do OpenStreetMap visível. Os registros antigos continuam acessíveis nas listas e indicadores, mesmo sem coordenadas.
 
 O Leaflet e os tiles OpenStreetMap exigem conexão com a internet. A Geolocation API depende de permissão do usuário e, fora de `localhost`, de um contexto seguro HTTPS.
